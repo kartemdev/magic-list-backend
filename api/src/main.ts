@@ -1,12 +1,26 @@
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const PORT = +process.env.PORT || 3000;
   const app = await NestFactory.create(AppModule);
 
-  await app.listen(PORT);
+  app.enableCors();
+  app.setGlobalPrefix('api');
 
-  console.log(PORT);
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('API Magic List')
+    .setDescription('API для работы продукта Magic List')
+    .setVersion('1.0.0 (beta)')
+    .addTag('by kartemdev')
+    .build();
+
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('/api/swagger', app, swaggerDocument);
+
+  const port = +process.env.PORT || 3000;
+  await app.listen(port, () =>
+    console.log(`listening at http://localhost:${port}`),
+  );
 }
 bootstrap();
