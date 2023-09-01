@@ -12,10 +12,10 @@ export const databaseConfig: DataSourceOptions = {
   username: process.env.POSTGRES_USERNAME,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DATABASE,
-  entities: [path.join(__dirname, '/**/*.entity{.js, .ts}')],
+  entities: [path.join(__dirname, '/../**/*.entity{.js, .ts}')],
 };
 
 export default registerAs('typeorm-pg', () => ({
   ...databaseConfig,
-  synchronize: false,
+  synchronize: true,
 }));
