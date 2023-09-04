@@ -2,28 +2,31 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserEntity } from 'src/user/user.entity';
 
-@Entity('user')
-export class UserEntity {
+@Entity('session')
+export class SessionEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    name: 'user_name',
-    length: 20,
-  })
-  userName: string;
+  @OneToOne(() => UserEntity, (user) => user.id)
+  @JoinColumn({ name: 'user_id' })
+  user: UserEntity;
 
   @Column({
-    length: 50,
+    name: 'user_agent',
   })
-  email: string;
+  userAgent: string;
 
-  @Column()
-  password: string;
+  @Column({
+    name: 'refresh_token',
+  })
+  refreshToken: string;
 
   @CreateDateColumn({
     name: 'created_at',
