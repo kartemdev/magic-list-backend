@@ -1,12 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
   app.setGlobalPrefix('api');
+  app.use(cookieParser());
+  app.enableCors({
+    credentials: true,
+    origin: process.env.FRONTEND_HOST,
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('API Magic List')
