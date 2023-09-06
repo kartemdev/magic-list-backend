@@ -11,7 +11,7 @@ import jwtSecretsConfig from './config/jwt-sercrets.config';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: '.env.development.local',
       isGlobal: true,
       load: [typeormPgConfig, jwtSecretsConfig],
     }),
