@@ -13,6 +13,8 @@ async function bootstrap() {
     origin: process.env.FRONTEND_HOST,
   });
 
+  console.log(process.env.FRONTEND_HOST, '!!!')
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle('API Magic List')
     .setDescription('API для работы продукта Magic List')
