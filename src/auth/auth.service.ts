@@ -5,12 +5,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import { PayloadRegisterUserDTO } from './common/auth.dto';
-import * as bcryptjs from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { PayloadLoginUserDTO, PayloadRegisterUserDTO } from './common/auth.dto';
 import { JwtUser } from './common/auth.interface';
 import { SessionService } from 'src/session/session.service';
+import * as bcryptjs from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -40,19 +40,67 @@ export class AuthService {
     };
   }
 
+  async login(data: PayloadLoginUserDTO, userAgent: string) {
+    try {
+      const user = await this.userService.getUserByEmail(data.email);
+      const passwordEquals = await bcryptjs.compare(
+        data.password,
+        user?.password,
+      );
+
+      if (user && passwordEquals) {
+        const { id, userName, email } = user;
+
+        const { accessToken, refreshToken } = this.generateTokens({
+          id,
+          userName,
+          email,
+        });
+
+        const session = await this.sessionService.getByUser(user.id);
+        if (session) {
+          await this.sessionService.update({
+            id: session.id,
+            userAgent,
+            refreshToken,
+          });
+        } else {
+          await this.sessionService.create({
+            user,
+            userAgent,
+            refreshToken,
+          });
+        }
+
+        return {
+          user: {
+            userName,
+            email,
+          },
+          accessToken,
+          refreshToken,
+        };
+      }
+    } catch {
+      throw new UnauthorizedException({
+        message: 'invalid_password_email',
+      });
+    }
+  }
+
   async register(data: PayloadRegisterUserDTO, userAgent: string) {
     const candidate = await this.userService.getUserByEmail(data.email);
 
     if (candidate?.userName === data.userName) {
       throw new HttpException(
-        'Пользователь с таким e-mail уже существует',
+        'user_email_already_exists',
         HttpStatus.BAD_REQUEST,
       );
     }
 
     if (candidate?.userName === data.userName) {
       throw new HttpException(
-        'Пользователь с таким именем уже существует',
+        'user_name_already_exists',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -87,9 +135,9 @@ export class AuthService {
   async refresh(token: string, userAgent: string) {
     const secretKeys = await this.configService.get('jwt-secrets');
 
-    const session = await this.sessionService.get(token);
+    const session = await this.sessionService.getByToken(token);
     if (!session) {
-      throw new UnauthorizedException('Не авторизован');
+      throw new UnauthorizedException('unauthorized');
     }
 
     const decodeUser = await this.jwtService.verify(session.refreshToken, {
@@ -97,7 +145,7 @@ export class AuthService {
     });
     if (!decodeUser || session?.userAgent !== userAgent) {
       await this.sessionService.delete(session.id);
-      throw new UnauthorizedException('Не авторизован');
+      throw new UnauthorizedException('unauthorized');
     }
 
     const user = await this.userService.getUserByEmail(decodeUser.email);
