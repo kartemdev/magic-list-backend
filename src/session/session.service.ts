@@ -19,13 +19,25 @@ export class SessionService {
     return session;
   }
 
-  async get(token: string) {
+  async getByToken(token: string) {
     if (!token) {
       return null;
     }
 
     const session = await this.sessionRepository.findOne({
       where: { refreshToken: token },
+    });
+
+    return session;
+  }
+
+  async getByUser(userId: number) {
+    if (!userId) {
+      return null;
+    }
+
+    const session = await this.sessionRepository.findOne({
+      where: { userId },
     });
 
     return session;

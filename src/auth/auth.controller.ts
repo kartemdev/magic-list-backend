@@ -1,13 +1,43 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
+import {
+  PayloadLoginUserDTO,
+  PayloadRegisterUserDTO,
+  ResponseAuthUserDTO,
+} from './common/auth.dto';
 import { AuthService } from './auth.service';
-import { PayloadRegisterUserDTO, ResponseAuthUserDTO } from './common/auth.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Автоизация')
+@ApiTags('Авторизация')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @ApiOperation({ summary: 'Логинизация пользователя' })
+  @ApiResponse({ status: 200, type: ResponseAuthUserDTO })
+  @Post('login')
+  async login(
+    @Req() req: Request,
+    @Body() data: PayloadLoginUserDTO,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { user, accessToken, refreshToken } = await this.authService.login(
+      data,
+      req.headers['user-agent'],
+    );
+
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      maxAge: 48 * 60 * 60 * 1000,
+      sameSite: 'none',
+      secure: true,
+    });
+
+    return {
+      ...user,
+      accessToken,
+    };
+  }
 
   @ApiOperation({ summary: 'Регистрация пользователя' })
   @ApiResponse({ status: 200, type: ResponseAuthUserDTO })
