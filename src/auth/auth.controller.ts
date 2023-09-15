@@ -29,6 +29,7 @@ export class AuthController {
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       maxAge: 48 * 60 * 60 * 1000,
+      domain: process.env.DOMAIN,
       sameSite: 'none',
       secure: true,
     });
@@ -55,6 +56,7 @@ export class AuthController {
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       maxAge: 48 * 60 * 60 * 1000,
+      domain: process.env.DOMAIN,
       sameSite: 'none',
       secure: true,
     });
@@ -79,6 +81,7 @@ export class AuthController {
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       maxAge: 48 * 60 * 60 * 1000,
+      domain: process.env.DOMAIN,
       sameSite: 'none',
       secure: true,
     });
