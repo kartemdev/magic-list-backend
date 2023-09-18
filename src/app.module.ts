@@ -4,15 +4,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionModule } from './session/session.module';
-
 import typeormPgConfig from './config/typeorm-pg.config';
-import jwtSecretsConfig from './config/jwt-sercrets.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [typeormPgConfig, jwtSecretsConfig],
+      load: [typeormPgConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

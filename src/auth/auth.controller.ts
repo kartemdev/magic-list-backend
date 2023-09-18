@@ -21,14 +21,14 @@ export class AuthController {
     @Body() data: PayloadLoginUserDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { user, accessToken, refreshToken } = await this.authService.login(
+    const { user, accessToken, refreshId } = await this.authService.login(
       data,
       req.headers['user-agent'],
     );
 
-    res.cookie('refresh_token', refreshToken, {
+    res.cookie('ml_uuid', refreshId, {
       httpOnly: true,
-      maxAge: 48 * 60 * 60 * 1000,
+      maxAge: 360 * 60 * 60 * 1000,
       domain: process.env.DOMAIN,
       sameSite: 'none',
       secure: true,
@@ -48,14 +48,14 @@ export class AuthController {
     @Body() data: PayloadRegisterUserDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { user, accessToken, refreshToken } = await this.authService.register(
+    const { user, accessToken, refreshId } = await this.authService.register(
       data,
       req.headers['user-agent'],
     );
 
-    res.cookie('refresh_token', refreshToken, {
+    res.cookie('ml_uuid', refreshId, {
       httpOnly: true,
-      maxAge: 48 * 60 * 60 * 1000,
+      maxAge: 360 * 60 * 60 * 1000,
       domain: process.env.DOMAIN,
       sameSite: 'none',
       secure: true,
@@ -73,14 +73,14 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { user, accessToken, refreshToken } = await this.authService.refresh(
-      req.cookies['refresh_token'],
+    const { user, accessToken, refreshId } = await this.authService.refresh(
+      req.cookies['ml_uuid'],
       req.headers['user-agent'],
     );
 
-    res.cookie('refresh_token', refreshToken, {
+    res.cookie('ml_uuid', refreshId, {
       httpOnly: true,
-      maxAge: 48 * 60 * 60 * 1000,
+      maxAge: 360 * 60 * 60 * 1000,
       domain: process.env.DOMAIN,
       sameSite: 'none',
       secure: true,

@@ -19,13 +19,13 @@ export class SessionService {
     return session;
   }
 
-  async getByToken(token: string) {
-    if (!token) {
+  async get(refreshId: string) {
+    if (!refreshId) {
       return null;
     }
 
     const session = await this.sessionRepository.findOne({
-      where: { refreshToken: token },
+      where: { refreshId },
     });
 
     return session;
@@ -44,18 +44,17 @@ export class SessionService {
   }
 
   async update(data: UpdateSessionDTO) {
-    if (data) {
-      const { id, refreshToken, userAgent } = data;
+    if (data?.id) {
+      const { id, refreshId, userAgent, expiresIn } = data;
 
-      if (id && refreshToken && userAgent) {
-        const session = await this.sessionRepository.update(
-          { id },
-          { refreshToken, userAgent },
-        );
+      const session = await this.sessionRepository.update(
+        { id },
+        { refreshId, userAgent, expiresIn },
+      );
 
-        return session;
-      }
+      return session;
     }
+    return null;
   }
 
   async delete(id: number) {
