@@ -29,9 +29,15 @@ export class SessionEntity {
   userAgent: string;
 
   @Column({
-    name: 'refresh_token',
+    name: 'refresh_id',
   })
-  refreshToken: string;
+  refreshId: string;
+
+  @Column({
+    name: 'expires_in',
+    type: 'bigint',
+  })
+  expiresIn: number;
 
   @CreateDateColumn({
     name: 'created_at',

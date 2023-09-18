@@ -19,7 +19,21 @@ export class UserService {
     return user;
   }
 
-  async getUserByEmail(email: string) {
+  async get(id: number) {
+    if (!id) {
+      return null;
+    }
+
+    const user = this.userRepository.findOne({ where: { id } });
+
+    return user;
+  }
+
+  async getByEmail(email: string) {
+    if (!email) {
+      return null;
+    }
+
     const user = this.userRepository.findOne({ where: { email } });
 
     return user;
