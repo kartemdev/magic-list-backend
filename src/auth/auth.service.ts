@@ -124,6 +124,13 @@ export class AuthService {
     };
   }
 
+  async logout(referesId: string) {
+    const session = await this.sessionService.get(referesId);
+    if (session) {
+      await this.sessionService.delete(session.id);
+    }
+  }
+
   async refresh(clientRefreshId: string, userAgent: string) {
     const session = await this.sessionService.get(clientRefreshId);
     if (!session) {
