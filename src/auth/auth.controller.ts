@@ -67,6 +67,13 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({ summary: 'Выход пользователя из аккааунта' })
+  @ApiResponse({ status: 200 })
+  @Get('logout')
+  async logout(@Req() req: Request) {
+    await this.authService.logout(req.cookies['ml_uuid']);
+  }
+
   @ApiOperation({ summary: 'Обновление JWT токенов' })
   @Get('refresh')
   async refresh(
