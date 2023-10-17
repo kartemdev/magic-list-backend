@@ -29,17 +29,14 @@ export class AuthService {
   }
 
   async login(data: PayloadLoginUserDTO, userAgent: string) {
-    const user = await this.userService.getByEmail(data.email);
+    const user = await this.userService.getByEmailOrName(data.email);
     const passwordEquals = await bcryptjs.compare(
       data.password,
       user?.password || '',
     );
 
     if (!user || !passwordEquals) {
-      throw new HttpException(
-        'invalid_password_email',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new HttpException('invalid_password_email', HttpStatus.BAD_REQUEST);
     }
 
     if (user && passwordEquals) {
@@ -80,18 +77,21 @@ export class AuthService {
   }
 
   async register(data: PayloadRegisterUserDTO, userAgent: string) {
-    const candidate = await this.userService.getByEmail(data.email);
-
-    if (candidate?.userName === data.userName) {
-      throw new HttpException(
-        'user_email_already_exists',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const candidate = await this.userService.getByEmailOrName(
+      data.email,
+      data.userName,
+    );
 
     if (candidate?.userName === data.userName) {
       throw new HttpException(
         'user_name_already_exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (candidate?.email === data.email) {
+      throw new HttpException(
+        'user_email_already_exists',
         HttpStatus.BAD_REQUEST,
       );
     }

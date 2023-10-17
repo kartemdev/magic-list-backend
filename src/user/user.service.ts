@@ -29,12 +29,14 @@ export class UserService {
     return user;
   }
 
-  async getByEmail(email: string) {
+  async getByEmailOrName(email: string, userName?: string) {
     if (!email) {
       return null;
     }
 
-    const user = this.userRepository.findOne({ where: { email } });
+    const user = this.userRepository.findOne({
+      where: [{ email }, { userName }],
+    });
 
     return user;
   }
