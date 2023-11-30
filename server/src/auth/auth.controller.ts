@@ -1,27 +1,33 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import {
-  PayloadLoginUserDTO,
-  PayloadRegisterUserDTO,
-  ResponseAuthUserDTO,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  PayloadLoginUserRequestDTO,
+  PayloadRegisterUserRequestDTO,
+  AuthUserResponseDTO,
 } from './common/auth.dto';
 import { AuthService } from './auth.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @ApiTags('Авторизация')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @ApiOperation({ summary: 'Логинизация пользователя' })
-  @ApiResponse({ status: 200, type: ResponseAuthUserDTO })
+  @ApiResponse({ status: 201, type: AuthUserResponseDTO })
   @Post('login')
   async login(
     @Req() req: Request,
-    @Body() data: PayloadLoginUserDTO,
+    @Body() data: PayloadLoginUserRequestDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { user, accessToken, refreshId } = await this.authService.login(
+    const { accessToken, refreshId } = await this.authService.login(
       data,
       req.headers['user-agent'],
     );
@@ -34,21 +40,18 @@ export class AuthController {
       secure: true,
     });
 
-    return {
-      ...user,
-      accessToken,
-    };
+    return { accessToken };
   }
 
   @ApiOperation({ summary: 'Регистрация пользователя' })
-  @ApiResponse({ status: 200, type: ResponseAuthUserDTO })
+  @ApiResponse({ status: 200, type: AuthUserResponseDTO })
   @Post('register')
   async register(
     @Req() req: Request,
-    @Body() data: PayloadRegisterUserDTO,
+    @Body() data: PayloadRegisterUserRequestDTO,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { user, accessToken, refreshId } = await this.authService.register(
+    const { accessToken, refreshId } = await this.authService.register(
       data,
       req.headers['user-agent'],
     );
@@ -61,10 +64,7 @@ export class AuthController {
       secure: true,
     });
 
-    return {
-      ...user,
-      accessToken,
-    };
+    return { accessToken };
   }
 
   @ApiOperation({ summary: 'Выход пользователя из аккааунта' })
@@ -75,12 +75,13 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Обновление JWT токенов' })
+  @ApiResponse({ status: 200, type: AuthUserResponseDTO })
   @Get('refresh')
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { user, accessToken, refreshId } = await this.authService.refresh(
+    const { accessToken, refreshId } = await this.authService.refresh(
       req.cookies['ml_uuid'],
       req.headers['user-agent'],
     );
@@ -93,9 +94,6 @@ export class AuthController {
       secure: true,
     });
 
-    return {
-      ...user,
-      accessToken,
-    };
+    return { accessToken };
   }
 }

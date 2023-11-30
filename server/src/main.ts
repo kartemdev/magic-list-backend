@@ -18,6 +18,7 @@ async function bootstrap() {
     .setDescription('API для работы продукта Magic List')
     .setVersion('1.0.0 (beta)')
     .addTag('by kartemdev')
+    .addBearerAuth()
     .build();
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);

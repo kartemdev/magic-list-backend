@@ -1,11 +1,19 @@
-import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SessionService } from 'src/session/session.service';
 
-
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService, private sessionService: SessionService) {}
+  constructor(
+    private jwtService: JwtService,
+    private sessionService: SessionService,
+  ) {}
 
   private parseCookies(cookieString: string) {
     if (!cookieString) {
@@ -24,21 +32,28 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     try {
-      const { authorization, cookie, ['user-agent']: headerUserAgent } = request.headers;
+      const {
+        authorization,
+        cookie,
+        ['user-agent']: headerUserAgent,
+      } = request.headers;
 
-      const bearer = authorization.split(' ')[0];
+      const typeToken = authorization.split(' ')[0];
       const token = authorization.split(' ')[1];
 
-      if (bearer !== 'Bearer' || !token) {
-        throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED) 
+      if (typeToken !== 'Bearer' || !token) {
+        throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
       }
 
       const cookieRefreshId = this.parseCookies(cookie)?.['ml_uuid'];
 
-      const { id, refreshId, expiresIn, userAgent } = await this.sessionService.get(cookieRefreshId);
+      const { id, refreshId, expiresIn, userAgent } =
+        await this.sessionService.getById(cookieRefreshId);
 
       if (
-        !this.jwtService.verify(token, { secret: process.env.ACCESS_SECRET_KEY }) ||
+        !this.jwtService.verify(token, {
+          secret: process.env.ACCESS_SECRET_KEY,
+        }) ||
         cookieRefreshId !== refreshId ||
         headerUserAgent !== userAgent ||
         new Date().getTime() >= expiresIn

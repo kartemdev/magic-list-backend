@@ -1,8 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { PayloadLoginUserDTO, PayloadRegisterUserDTO } from './common/auth.dto';
-import { JwtUser } from './common/auth.interface';
+import {
+  PayloadLoginUserRequestDTO,
+  PayloadRegisterUserRequestDTO,
+} from './common/auth.dto';
 import { SessionService } from 'src/session/session.service';
 import { v4 as uuid } from 'uuid';
 import * as bcryptjs from 'bcryptjs';
@@ -15,7 +17,7 @@ export class AuthService {
     private sessionService: SessionService,
   ) {}
 
-  private generateTokens(data: JwtUser) {
+  private generateTokens(data: { id: number }) {
     const accessToken = this.jwtService.sign(data, {
       secret: process.env.ACCESS_SECRET_KEY,
       expiresIn: '20m',
@@ -28,8 +30,13 @@ export class AuthService {
     };
   }
 
-  async login(data: PayloadLoginUserDTO, userAgent: string) {
-    const user = await this.userService.getByEmailOrName(data.email);
+  async login(data: PayloadLoginUserRequestDTO, userAgent: string) {
+    const user = await this.userService.getUserByEmailOrName(
+      data.email,
+      null,
+      true,
+    );
+
     const passwordEquals = await bcryptjs.compare(
       data.password,
       user?.password || '',
@@ -40,15 +47,12 @@ export class AuthService {
     }
 
     if (user && passwordEquals) {
-      const { id, userName, email } = user;
-
       const { accessToken, refreshId, expiresIn } = this.generateTokens({
-        id,
-        userName,
-        email,
+        id: user.id,
       });
 
-      const session = await this.sessionService.getByUser(user.id);
+      const session = await this.sessionService.getByUser(user.id, true);
+
       if (session) {
         await this.sessionService.update({
           id: session.id,
@@ -65,21 +69,15 @@ export class AuthService {
         });
       }
 
-      return {
-        user: {
-          userName,
-          email,
-        },
-        accessToken,
-        refreshId,
-      };
+      return { accessToken, refreshId };
     }
   }
 
-  async register(data: PayloadRegisterUserDTO, userAgent: string) {
-    const candidate = await this.userService.getByEmailOrName(
+  async register(data: PayloadRegisterUserRequestDTO, userAgent: string) {
+    const candidate = await this.userService.getUserByEmailOrName(
       data.email,
       data.userName,
+      true,
     );
 
     if (candidate?.userName === data.userName) {
@@ -99,12 +97,8 @@ export class AuthService {
     const password = await bcryptjs.hash(data.password, 5);
     const user = await this.userService.create({ ...data, password });
 
-    const { id, userName, email } = user;
-
     const { accessToken, refreshId, expiresIn } = this.generateTokens({
-      id,
-      userName,
-      email,
+      id: user.id,
     });
 
     await this.sessionService.create({
@@ -114,25 +108,19 @@ export class AuthService {
       expiresIn,
     });
 
-    return {
-      user: {
-        userName,
-        email,
-      },
-      accessToken,
-      refreshId,
-    };
+    return { accessToken, refreshId };
   }
 
   async logout(referesId: string) {
-    const session = await this.sessionService.get(referesId);
+    const session = await this.sessionService.getById(referesId, true);
     if (session) {
       await this.sessionService.delete(session.id);
     }
   }
 
   async refresh(clientRefreshId: string, userAgent: string) {
-    const session = await this.sessionService.get(clientRefreshId);
+    const session = await this.sessionService.getById(clientRefreshId, true);
+
     if (!session) {
       throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
     }
@@ -153,14 +141,14 @@ export class AuthService {
       throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
     }
 
-    const user = await this.userService.get(userId);
+    const user = await this.userService.getUserInfo(userId, true);
 
-    const { id, userName, email } = user;
+    if (!user) {
+      throw new HttpException('user_not_found', HttpStatus.NOT_FOUND);
+    }
 
     const { accessToken, refreshId, expiresIn } = this.generateTokens({
-      id,
-      userName,
-      email,
+      id: user.id,
     });
 
     await this.sessionService.update({
@@ -170,13 +158,6 @@ export class AuthService {
       expiresIn,
     });
 
-    return {
-      user: {
-        userName,
-        email,
-      },
-      accessToken,
-      refreshId,
-    };
+    return { accessToken, refreshId };
   }
 }

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class PayloadLoginUserDTO {
+export class PayloadLoginUserRequestDTO {
   @ApiProperty({ example: 'Alex@mail.ru' })
   email: string;
 
@@ -8,7 +8,7 @@ export class PayloadLoginUserDTO {
   password: string;
 }
 
-export class PayloadRegisterUserDTO {
+export class PayloadRegisterUserRequestDTO {
   @ApiProperty({ example: 'Alex' })
   userName: string;
 
@@ -19,13 +19,7 @@ export class PayloadRegisterUserDTO {
   password: string;
 }
 
-export class ResponseAuthUserDTO {
-  @ApiProperty({ example: 'Alex' })
-  userName: string;
-
-  @ApiProperty({ example: 'Alex@mail.ru' })
-  email: string;
-
+export class AuthUserResponseDTO {
   @ApiProperty({ example: 'token_string' })
   accessToken: string;
 }
