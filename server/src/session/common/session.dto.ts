@@ -1,12 +1,12 @@
 import { UserEntity } from 'src/user/user.entity';
-export class CreateSessionDTO {
+export class CreateSessionRequestDTO {
   user: UserEntity;
   userAgent: string;
   refreshId: string;
   expiresIn: number;
 }
 
-export class UpdateSessionDTO {
+export class UpdateSessionRequestDTO {
   id: number;
   userAgent: string;
   refreshId: string;

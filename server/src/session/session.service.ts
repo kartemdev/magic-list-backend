@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SessionEntity } from './session.entity';
 import { Repository } from 'typeorm';
-import { CreateSessionDTO, UpdateSessionDTO } from './common/session.dto';
+import {
+  CreateSessionRequestDTO,
+  UpdateSessionRequestDTO,
+} from './common/session.dto';
 
 @Injectable()
 export class SessionService {
@@ -11,7 +14,7 @@ export class SessionService {
     private sessionRepository: Repository<SessionEntity>,
   ) {}
 
-  async create(data: CreateSessionDTO) {
+  async create(data: CreateSessionRequestDTO) {
     const session = this.sessionRepository.create(data);
 
     await this.sessionRepository.save(session);
@@ -19,49 +22,59 @@ export class SessionService {
     return session;
   }
 
-  async get(refreshId: string) {
-    if (!refreshId) {
-      return null;
-    }
-
+  async getById(refreshId: string, isOutsideUse = false) {
     const session = await this.sessionRepository.findOne({
       where: { refreshId },
     });
 
-    return session;
-  }
-
-  async getByUser(userId: number) {
-    if (!userId) {
+    if (!session && isOutsideUse) {
       return null;
     }
 
+    if (!session) {
+      throw new HttpException('session_not_found', HttpStatus.NOT_FOUND);
+    }
+
+    return session;
+  }
+
+  async getByUser(userId: number, isOutsideUse = false) {
     const session = await this.sessionRepository.findOne({
       where: { userId },
     });
 
+    if (!session && isOutsideUse) {
+      return null;
+    }
+
+    if (!session) {
+      throw new HttpException('session_not_found', HttpStatus.NOT_FOUND);
+    }
+
     return session;
   }
 
-  async update(data: UpdateSessionDTO) {
-    if (data?.id) {
-      const { id, refreshId, userAgent, expiresIn } = data;
+  async update(data: UpdateSessionRequestDTO) {
+    const session = await this.sessionRepository.findOne({
+      where: { id: data?.id },
+    });
 
-      const session = await this.sessionRepository.update(
-        { id },
-        { refreshId, userAgent, expiresIn },
-      );
-
-      return session;
+    if (!session) {
+      throw new HttpException('session_not_found', HttpStatus.NOT_FOUND);
     }
-    return null;
+
+    const updateSession = { ...session, ...data };
+
+    await this.sessionRepository.save(updateSession);
   }
 
   async delete(id: number) {
     if (!id) {
       return null;
     }
+
     await this.sessionRepository.delete({ id });
+
     return id;
   }
 }
