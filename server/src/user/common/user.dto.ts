@@ -11,6 +11,9 @@ export class CreateUserRequestDTO {
 export class UpdateUserInfoRequestDTO {
   @ApiProperty({ example: 'michael' })
   userName: string;
+
+  @ApiProperty({ example: 'michael@gmail.com' })
+  email: string;
 }
 
 // ---------- ResponseDTOs ----------
@@ -27,4 +30,15 @@ export class UserInfoResponseDTO {
 
   @ApiProperty({ example: new Date() })
   registerDate: string;
+
+  @ApiProperty({ example: false })
+  isVerified: boolean;
+}
+
+export class VerifieResponseDTO {
+  @ApiProperty({ example: 1706272992178 })
+  verifieCodeCreatedTime: number;
+
+  @ApiProperty({ example: true })
+  isExpiresVerife: boolean;
 }

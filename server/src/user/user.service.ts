@@ -7,6 +7,12 @@ import {
   UpdateUserInfoRequestDTO,
 } from './common/user.dto';
 import { UserMapper } from './common/user.mappper';
+import { VerifieService } from 'src/verifie/verifie.service';
+import { MailingService } from 'src/mailing/mailing.service';
+import {
+  MailTemplates,
+  MailTemplatesContexts,
+} from 'src/common/mail-templates';
 
 @Injectable()
 export class UserService {
@@ -14,7 +20,21 @@ export class UserService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     private userMapper: UserMapper,
+    private verifeService: VerifieService,
+    private mailingService: MailingService,
   ) {}
+
+  private async checkExistUpdateInfo<T>(
+    id: number,
+    key: keyof UserEntity,
+    value: T,
+  ) {
+    const candidate = await this.userRepository.findOne({
+      where: [{ [key]: value }],
+    });
+
+    return candidate?.[key] === value && candidate?.id !== id;
+  }
 
   async create(data: CreateUserRequestDTO) {
     const user = this.userRepository.create(data);
@@ -59,19 +79,8 @@ export class UserService {
   }
 
   async updateUserInfo(id: number, data: UpdateUserInfoRequestDTO) {
-    if (!data?.userName) {
+    if (!data) {
       throw new HttpException('bad_request', HttpStatus.BAD_REQUEST);
-    }
-
-    const candidate = await this.userRepository.findOne({
-      where: [{ userName: data.userName }],
-    });
-
-    if (candidate?.userName === data.userName && candidate?.id !== id) {
-      throw new HttpException(
-        'user_name_already_exists',
-        HttpStatus.BAD_REQUEST,
-      );
     }
 
     const user = await this.userRepository.findOne({
@@ -82,6 +91,102 @@ export class UserService {
       throw new HttpException('user_not_found', HttpStatus.NOT_FOUND);
     }
 
-    await this.userRepository.save({ ...user, ...data });
+    const { userName, email } = data;
+    const updateData: Record<string, unknown> = {};
+
+    if (
+      userName &&
+      (await this.checkExistUpdateInfo(user.id, 'userName', userName))
+    ) {
+      throw new HttpException(
+        'user_name_already_exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (userName) {
+      updateData.userName = userName;
+    }
+
+    if (email && (await this.checkExistUpdateInfo(user.id, 'email', email))) {
+      throw new HttpException(
+        'user_email_already_exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (email && !user.isVerified) {
+      await this.verifeService.delete(user.id);
+    } else if (email) {
+      updateData.email = email;
+    }
+
+    await this.userRepository.save({ ...user, ...updateData });
+  }
+
+  async getVerifieCreatedTime(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new HttpException('user_not_found', HttpStatus.NOT_FOUND);
+    }
+
+    const {
+      data: { createdAt },
+      isExpires,
+    } = await this.verifeService.getVerifie(user);
+
+    return {
+      verifieCreatedTime: createdAt.getTime(),
+      isExpiresVerifie: isExpires,
+    };
+  }
+
+  async sendVerifie(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new HttpException('user_not_found', HttpStatus.NOT_FOUND);
+    }
+
+    if (user.isVerified) {
+      throw new HttpException('user_is_verified', HttpStatus.BAD_REQUEST);
+    }
+
+    const verifieCode = `${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const verifie = await this.verifeService.create(user, verifieCode, 10);
+
+    await this.mailingService.sendMail<
+      MailTemplatesContexts[MailTemplates.VerifyUser]
+    >({
+      to: user.email,
+      subject: 'Подтверждение учетной записи',
+      template: MailTemplates.VerifyUser,
+      context: {
+        code: verifie.code,
+        name: user.userName,
+      },
+    });
+  }
+
+  async confirmVerifie(userId: number, verifieCode: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new HttpException('user_not_found', HttpStatus.NOT_FOUND);
+    }
+
+    if (user.isVerified) {
+      throw new HttpException('user_is_verified', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      await this.verifeService.confirm(user.id, verifieCode);
+    } catch (error) {
+      throw new HttpException(`user_${error.message}`, HttpStatus.BAD_REQUEST);
+    }
+
+    await this.userRepository.save({
+      ...user,
+      isVerified: true,
+      verifieCreatedTime: null,
+    });
   }
 }
