@@ -12,12 +12,16 @@ import {
   AuthUserResponseDTO,
 } from './common/auth.dto';
 import { AuthService } from './auth.service';
+import { ConfigService } from '@nestjs/config';
 
 @ApiBearerAuth()
 @ApiTags('Авторизация')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private configService: ConfigService,
+  ) {}
 
   @ApiOperation({ summary: 'Логинизация пользователя' })
   @ApiResponse({ status: 201, type: AuthUserResponseDTO })
@@ -32,19 +36,13 @@ export class AuthController {
       req.headers['user-agent'],
     );
 
-    res.cookie('ml_uuid', refreshId, {
-      httpOnly: true,
-      maxAge: 360 * 60 * 60 * 1000,
-      domain: process.env.DOMAIN,
-      sameSite: 'none',
-      secure: true,
-    });
+    res.cookie('ml_uuid', refreshId, this.configService.get('auth-cookie'));
 
     return { accessToken };
   }
 
   @ApiOperation({ summary: 'Регистрация пользователя' })
-  @ApiResponse({ status: 200, type: AuthUserResponseDTO })
+  @ApiResponse({ status: 200 })
   @Post('register')
   async register(
     @Req() req: Request,
@@ -56,13 +54,7 @@ export class AuthController {
       req.headers['user-agent'],
     );
 
-    res.cookie('ml_uuid', refreshId, {
-      httpOnly: true,
-      maxAge: 360 * 60 * 60 * 1000,
-      domain: process.env.DOMAIN,
-      sameSite: 'none',
-      secure: true,
-    });
+    res.cookie('ml_uuid', refreshId, this.configService.get('auth-cookie'));
 
     return { accessToken };
   }
@@ -86,13 +78,7 @@ export class AuthController {
       req.headers['user-agent'],
     );
 
-    res.cookie('ml_uuid', refreshId, {
-      httpOnly: true,
-      maxAge: 360 * 60 * 60 * 1000,
-      domain: process.env.DOMAIN,
-      sameSite: 'none',
-      secure: true,
-    });
+    res.cookie('ml_uuid', refreshId, this.configService.get('auth-cookie'));
 
     return { accessToken };
   }

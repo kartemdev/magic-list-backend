@@ -1,5 +1,5 @@
 import { UserId } from '@decorators/auth.decorators';
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -11,6 +11,7 @@ import { UserService } from './user.service';
 import {
   UserInfoResponseDTO,
   UpdateUserInfoRequestDTO,
+  VerifieResponseDTO,
 } from './common/user.dto';
 
 @ApiBearerAuth()
@@ -23,7 +24,7 @@ export class UserController {
   @ApiResponse({ status: 200, type: UserInfoResponseDTO })
   @Get('info')
   @UseGuards(AuthGuard)
-  async getUserInfo(@UserId() userId: number) {
+  getUserInfo(@UserId() userId: number) {
     return this.userService.getUserInfo(userId);
   }
 
@@ -31,10 +32,37 @@ export class UserController {
   @ApiResponse({ status: 200 })
   @Patch('info')
   @UseGuards(AuthGuard)
-  async updateUserInfo(
+  updateUserInfo(
     @UserId() userId: number,
     @Body() data: UpdateUserInfoRequestDTO,
   ) {
     return this.userService.updateUserInfo(userId, data);
+  }
+
+  @ApiOperation({
+    summary:
+      'Получение даты создания данных подтверждения действий пользователя',
+  })
+  @ApiResponse({ status: 200, type: VerifieResponseDTO })
+  @Get('verifie')
+  @UseGuards(AuthGuard)
+  getVerifie(@UserId() userId: number) {
+    return this.userService.getVerifieCreatedTime(userId);
+  }
+
+  @ApiOperation({ summary: 'Отправка письма с кодом подтверждения' })
+  @ApiResponse({ status: 200 })
+  @Get('send-verifie')
+  @UseGuards(AuthGuard)
+  sendVerifie(@UserId() userId: number) {
+    return this.userService.sendVerifie(userId);
+  }
+
+  @ApiOperation({ summary: 'Проверка кода подтверждения' })
+  @ApiResponse({ status: 200 })
+  @Get('confirm-verifie/:code')
+  @UseGuards(AuthGuard)
+  confirmVerifie(@UserId() userId: number, @Param('code') code: string) {
+    return this.userService.confirmVerifie(userId, code);
   }
 }

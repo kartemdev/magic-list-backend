@@ -12,6 +12,12 @@ export class UserEntity {
   id: number;
 
   @Column({
+    name: 'is_verified',
+    default: false,
+  })
+  isVerified: boolean;
+
+  @Column({
     name: 'user_name',
     length: 20,
   })
