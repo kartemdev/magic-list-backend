@@ -36,6 +36,28 @@ export class UserService {
     return candidate?.[key] === value && candidate?.id !== id;
   }
 
+  private async updateUserName(user: UserEntity, userName: string) {
+    if (await this.checkExistUpdateInfo(user.id, 'userName', userName)) {
+      throw new HttpException(
+        'user_name_already_exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.userRepository.save({ ...user, userName });
+  }
+
+  private async updateEmail(user: UserEntity, email: string) {
+    if (await this.checkExistUpdateInfo(user.id, 'email', email)) {
+      throw new HttpException(
+        'user_email_already_exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.userRepository.save({ ...user, email });
+  }
+
   async create(data: CreateUserRequestDTO) {
     const user = this.userRepository.create(data);
 
@@ -92,32 +114,14 @@ export class UserService {
     }
 
     const { userName, email } = data;
-    const updateData: Record<string, unknown> = {};
 
-    if (
-      userName &&
-      (await this.checkExistUpdateInfo(user.id, 'userName', userName))
-    ) {
-      throw new HttpException(
-        'user_name_already_exists',
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (userName) {
-      updateData.userName = userName;
+    if (userName) {
+      await this.updateUserName(user, userName);
     }
 
-    if (email && (await this.checkExistUpdateInfo(user.id, 'email', email))) {
-      throw new HttpException(
-        'user_email_already_exists',
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (email && !user.isVerified) {
-      await this.verifeService.delete(user.id);
-    } else if (email) {
-      updateData.email = email;
+    if (email) {
+      await this.updateEmail(user, email);
     }
-
-    await this.userRepository.save({ ...user, ...updateData });
   }
 
   async getVerifieCreatedTime(userId: number) {
