@@ -1,7 +1,5 @@
 import { registerAs } from '@nestjs/config';
 
-require('dotenv').config();
-
 export default registerAs('auth-cookie', () => ({
   httpOnly: true,
   maxAge: 360 * 60 * 60 * 1000,

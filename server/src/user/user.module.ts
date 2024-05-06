@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserService } from './services/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
-import { UserController } from './user.controller';
 import { UserMapper } from './common/user.mappper';
 import { VerifieModule } from 'src/verifie/verifie.module';
 import { MailingModule } from 'src/mailing/mailing.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { UserVerifieService } from './services/user-verifie.service';
+import { UserVerifieController } from './controllers/user-verifie.controller';
+import { UserController } from './controllers/user.controller';
 
 @Module({
   imports: [
@@ -15,8 +17,8 @@ import { AuthModule } from 'src/auth/auth.module';
     VerifieModule,
     MailingModule,
   ],
-  providers: [UserService, UserMapper],
-  exports: [UserService],
-  controllers: [UserController],
+  providers: [UserService, UserVerifieService, UserMapper],
+  exports: [UserService, UserVerifieService],
+  controllers: [UserController, UserVerifieController],
 })
 export class UserModule {}
