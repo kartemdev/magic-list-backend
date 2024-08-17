@@ -1,16 +1,16 @@
 FROM node:18-alpine
 
-WORKDIR /usr/src/api/server
+WORKDIR /app/server
 
 COPY ./server/package*.json ./
 
-RUN npm install
+RUN npm ci
 
-WORKDIR /usr/src/api
+WORKDIR /app
 
 COPY . .
 
-WORKDIR /usr/src/api/server
+WORKDIR /app/server
 
 RUN npm run build
 
