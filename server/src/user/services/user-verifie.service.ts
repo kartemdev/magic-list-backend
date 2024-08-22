@@ -30,7 +30,7 @@ export class UserVerifieService {
     } = await this.verifeService.getVerifie(user);
 
     return {
-      verifieCreatedTime: createdAt.getTime(),
+      createdAt,
       isExpiresVerifie: isExpires,
     };
   }

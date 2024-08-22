@@ -7,9 +7,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
-import {
-  VerifieResponseDTO,
-} from '../common/user.dto';
+import { VerifieResponseDTO } from '../common/user.dto';
 import { UserVerifieService } from '../services/user-verifie.service';
 
 @ApiBearerAuth()
@@ -19,8 +17,7 @@ export class UserVerifieController {
   constructor(private userVerifieService: UserVerifieService) {}
 
   @ApiOperation({
-    summary:
-      'Получение данных о подтверждении действий пользователя',
+    summary: 'Получение данных о подтверждении действий пользователя',
   })
   @ApiResponse({ status: 200, type: VerifieResponseDTO })
   @Get('verifie')
@@ -29,7 +26,10 @@ export class UserVerifieController {
     return this.userVerifieService.getVerifie(userId);
   }
 
-  @ApiOperation({ summary: 'Отправка письма с кодом подтверждения, первоначальной верификации' })
+  @ApiOperation({
+    summary:
+      'Отправка письма с кодом подтверждения, первоначальной верификации',
+  })
   @ApiResponse({ status: 200 })
   @Get('verifie/send-initial')
   @UseGuards(AuthGuard)
@@ -37,7 +37,9 @@ export class UserVerifieController {
     return this.userVerifieService.sendInitialVerifie(userId);
   }
 
-  @ApiOperation({ summary: 'Проверка кода подтверждения, первоначальной верификации' })
+  @ApiOperation({
+    summary: 'Проверка кода подтверждения, первоначальной верификации',
+  })
   @ApiResponse({ status: 200 })
   @Get('verifie/confirm-initial/:code')
   @UseGuards(AuthGuard)
