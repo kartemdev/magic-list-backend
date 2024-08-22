@@ -36,8 +36,8 @@ export class UserInfoResponseDTO {
 }
 
 export class VerifieResponseDTO {
-  @ApiProperty({ example: 1706272992178 })
-  verifieCodeCreatedTime: number;
+  @ApiProperty({ example: '2024-08-22T14:21:17.928Z' })
+  createdAt: string;
 
   @ApiProperty({ example: true })
   isExpiresVerife: boolean;
