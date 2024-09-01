@@ -7,12 +7,16 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { VerifieGuard } from 'src/verifie/verifie.guard';
 import { UserService } from '../services/user.service';
-import { UpdateUserInfoRequestDTO, UserInfoResponseDTO } from '../common/user.dto';
-
+import {
+  UpdateUserInfoRequestDTO,
+  UserInfoResponseDTO,
+} from '../common/user.dto';
 
 @ApiBearerAuth()
 @ApiTags('Пользователь')
+@UseGuards(AuthGuard, VerifieGuard)
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
@@ -20,7 +24,6 @@ export class UserController {
   @ApiOperation({ summary: 'Получение информации о пользователе' })
   @ApiResponse({ status: 200, type: UserInfoResponseDTO })
   @Get('info')
-  @UseGuards(AuthGuard)
   getUserInfo(@UserId() userId: number) {
     return this.userService.getUserInfo(userId);
   }
@@ -28,7 +31,6 @@ export class UserController {
   @ApiOperation({ summary: 'Изменение информации пользователя' })
   @ApiResponse({ status: 200 })
   @Patch('info')
-  @UseGuards(AuthGuard)
   updateUserInfo(
     @UserId() userId: number,
     @Body() data: UpdateUserInfoRequestDTO,
