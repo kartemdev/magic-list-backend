@@ -1,11 +1,6 @@
 import { ExecutionContext, createParamDecorator } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-
-interface JwtTokenDecodeData {
-  id: number;
-  iat: number;
-  ext: number;
-}
+import { JwtTokenDecodeData } from '../interfaces/jwt-token-data.interface';
 
 export const UserId = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {

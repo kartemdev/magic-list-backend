@@ -1,11 +1,6 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   PayloadLoginUserRequestDTO,
   PayloadRegisterUserRequestDTO,
@@ -14,7 +9,6 @@ import {
 import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 
-@ApiBearerAuth()
 @ApiTags('Авторизация')
 @Controller('auth')
 export class AuthController {
