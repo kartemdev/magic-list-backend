@@ -6,7 +6,7 @@ on:
       - closed
 jobs:
   build-push:
-    if: ${{ github.event.pull_request.merged }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master') || github.event.pull_request.merged }}
     environment: production
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +32,7 @@ jobs:
           context: .
           push: true
           tags: kartemdev/magiclist-api:latest
-  ssh-deploy:
+  pull-deploy:
     needs: build-push
     environment: production
     runs-on: ubuntu-latest
