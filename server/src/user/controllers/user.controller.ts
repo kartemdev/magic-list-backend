@@ -16,13 +16,13 @@ import {
 
 @ApiBearerAuth()
 @ApiTags('Пользователь')
-@UseGuards(AuthGuard, VerifieGuard)
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
   @ApiOperation({ summary: 'Получение информации о пользователе' })
   @ApiResponse({ status: 200, type: UserInfoResponseDTO })
+  @UseGuards(AuthGuard)
   @Get('info')
   getUserInfo(@UserId() userId: number) {
     return this.userService.getUserInfo(userId);
@@ -30,6 +30,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Изменение информации пользователя' })
   @ApiResponse({ status: 200 })
+  @UseGuards(AuthGuard, VerifieGuard)
   @Patch('info')
   updateUserInfo(
     @UserId() userId: number,

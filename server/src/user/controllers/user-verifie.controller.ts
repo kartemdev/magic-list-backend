@@ -7,13 +7,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { VerifieGuard } from 'src/verifie/verifie.guard';
 import { VerifieResponseDTO } from '../common/user.dto';
 import { UserVerifieService } from '../services/user-verifie.service';
 
 @ApiBearerAuth()
 @ApiTags('Пользователь')
-@UseGuards(AuthGuard, VerifieGuard)
 @Controller('user')
 export class UserVerifieController {
   constructor(private userVerifieService: UserVerifieService) {}
