@@ -15,6 +15,6 @@ import { SessionModule } from 'src/session/session.module';
   ],
   controllers: [AuthController],
   providers: [AuthService],
-  exports: [AuthService, JwtModule, SessionModule],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

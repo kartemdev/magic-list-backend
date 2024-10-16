@@ -14,6 +14,7 @@ import { VerifieModule } from './verifie/verifie.module';
 import * as path from 'path';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { ResidueModule } from './residue/residue.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { APP_GUARD } from '@nestjs/core';
     SessionModule,
     MailingModule,
     VerifieModule,
+    ResidueModule,
   ],
   providers: [
     {
