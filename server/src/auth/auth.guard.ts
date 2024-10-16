@@ -49,18 +49,21 @@ export class AuthGuard implements CanActivate {
     const { id, refreshId, expiresIn, userAgent } =
       await this.sessionService.getById(cookieRefreshId);
 
-    if (
-      !this.jwtService.verify(token, {
-        secret: process.env.ACCESS_SECRET_KEY,
-      }) ||
-      cookieRefreshId !== refreshId ||
-      headerUserAgent !== userAgent ||
-      new Date().getTime() >= expiresIn
-    ) {
-      await this.sessionService.delete(id);
+    try {
+      if (
+        !this.jwtService.verify(token, {
+          secret: process.env.ACCESS_SECRET_KEY,
+        }) ||
+        cookieRefreshId !== refreshId ||
+        headerUserAgent !== userAgent ||
+        new Date().getTime() >= expiresIn
+      ) {
+        await this.sessionService.delete(id);
+        throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
+      }
+    } catch {
       throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
     }
-
     return true;
   }
 }
