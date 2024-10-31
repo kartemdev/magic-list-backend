@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
-import { ResidueService } from './residue.service';
+import { ResiduesService } from './residue.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ResidueEntity } from './residue.entity';
-import { ResidueController } from './residue.controller';
+import { ResiduesController } from './residues.controller';
 import { VerifieModule } from 'src/verifie/verifie.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/user/user.module';
@@ -17,7 +17,7 @@ import { SessionModule } from 'src/session/session.module';
     VerifieModule,
     SessionModule,
   ],
-  controllers: [ResidueController],
-  providers: [ResidueService],
+  controllers: [ResiduesController],
+  providers: [ResiduesService],
 })
-export class ResidueModule {}
+export class ResiduesModule {}

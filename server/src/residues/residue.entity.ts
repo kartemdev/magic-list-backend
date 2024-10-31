@@ -1,3 +1,4 @@
+import { NumberTransformer } from 'src/common/transformers/number.transformer';
 import { UserEntity } from 'src/user/user.entity';
 import {
   Column,
@@ -27,25 +28,33 @@ export class ResidueEntity {
 
   @Column({
     type: 'bigint',
+    width: 15,
+    unique: true,
+    transformer: new NumberTransformer(),
   })
-  article: bigint;
+  article: number;
 
   @Column({
     type: 'varchar',
-    length: 30,
+    length: 60,
   })
   product: string;
 
   @Column({
     type: 'bigint',
+    width: 15,
+    transformer: new NumberTransformer(),
   })
-  residue: bigint;
+  residue: number;
 
   @Column({
     name: 'unit_price',
-    type: 'bigint',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    transformer: new NumberTransformer(),
   })
-  unitPrice: bigint;
+  unitPrice: number;
 
   @CreateDateColumn({
     name: 'created_at',
