@@ -4,14 +4,14 @@ import { ResidueEntity } from './residue.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class ResidueService {
+export class ResiduesService {
   constructor(
     @InjectRepository(ResidueEntity)
-    private residueRepository: Repository<ResidueEntity>,
+    private residuesRepository: Repository<ResidueEntity>,
   ) {}
 
-  getResiduesByUserId(userId: number) {
-    return this.residueRepository.find({
+  async getResiduesByUserId(userId: number) {
+    return await this.residuesRepository.find({
       where: { userId },
       select: ['id', 'article', 'product', 'residue', 'unitPrice', 'createdAt'],
     });
