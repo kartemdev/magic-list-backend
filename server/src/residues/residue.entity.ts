@@ -29,7 +29,6 @@ export class ResidueEntity {
   @Column({
     type: 'bigint',
     width: 15,
-    unique: true,
     transformer: new NumberTransformer(),
   })
   article: number;
