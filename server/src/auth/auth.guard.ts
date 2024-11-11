@@ -46,10 +46,10 @@ export class AuthGuard implements CanActivate {
 
     const cookieRefreshId = this.parseCookies(cookie)?.['ml_uuid'];
 
-    const { id, refreshId, expiresIn, userAgent } =
-      await this.sessionService.getById(cookieRefreshId);
-
     try {
+      const { id, refreshId, expiresIn, userAgent } =
+        await this.sessionService.getById(cookieRefreshId);
+
       if (
         !this.jwtService.verify(token, {
           secret: process.env.ACCESS_SECRET_KEY,
@@ -64,6 +64,7 @@ export class AuthGuard implements CanActivate {
     } catch {
       throw new HttpException('unauthorized', HttpStatus.UNAUTHORIZED);
     }
+
     return true;
   }
 }
